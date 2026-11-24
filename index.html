@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Math Explorers</title>
+<style>
+:root{--bg1:#4facfe;--bg2:#00f2fe;--ink:#1d2b53;--top:#fff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Trebuchet MS','Comic Sans MS',system-ui,sans-serif;color:var(--ink);min-height:100vh;
+  background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;overflow-x:hidden;transition:background .6s}
+body[data-world=jungle]{--bg1:#38a169;--bg2:#b7e36b}
+body[data-world=ocean]{--bg1:#0575e6;--bg2:#21d4fd}
+body[data-world=mountain]{--bg1:#7b8fa6;--bg2:#dfe9f3}
+body[data-world=space]{--bg1:#0f0c29;--bg2:#4b3fa0}
+body[data-world=island]{--bg1:#f6b93b;--bg2:#4fd1c5}
+body[data-world=cave]{--bg1:#41295a;--bg2:#2f0743}
+body[data-world=quest]{--bg1:#ff512f;--bg2:#dd2476}
+#deco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#deco span{position:absolute;opacity:.35;animation:float 9s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-28px) rotate(8deg)}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+.top{position:relative;z-index:2;display:flex;align-items:center;gap:10px;padding:12px 16px;color:var(--top);text-shadow:0 2px 4px rgba(0,0,0,.3)}
+.brand{font-weight:900;font-size:1.3rem;cursor:pointer}
+.who{margin-left:auto;font-weight:700;font-size:.95rem}
+.icon{border:0;background:rgba(255,255,255,.85);border-radius:50%;width:42px;height:42px;font-size:1.2rem;cursor:pointer}
+main{position:relative;z-index:2;max-width:900px;margin:0 auto;padding:8px 16px 40px}
+.screen{display:none}.screen.active{display:block;animation:pop .4s ease}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.card{background:#fff;border-radius:24px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.center{text-align:center}
+.hero{font-size:5rem;animation:bounce 1.6s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+h1{font-size:2.4rem;margin:6px 0}
+h2{margin-bottom:12px}
+.codename{font-size:2rem;font-weight:900;margin:10px 0;color:#e8590c;animation:pop .5s}
+.btn{border:0;border-radius:18px;padding:14px 26px;font-size:1.2rem;font-weight:800;color:#fff;cursor:pointer;
+  background:linear-gradient(135deg,#ff6b6b,#ff922b);box-shadow:0 5px 0 #c92a2a;margin:6px;transition:transform .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #c92a2a}
+.btn.alt{background:linear-gradient(135deg,#4dabf7,#845ef7);box-shadow:0 5px 0 #4c3fb0}
+.btn.alt:active{box-shadow:0 1px 0 #4c3fb0}
+.link{background:none;border:0;color:#fff;font-weight:700;font-size:1rem;cursor:pointer;margin-top:14px;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.world{background:#fff;border-radius:22px;padding:18px;text-align:center;box-shadow:0 8px 20px rgba(0,0,0,.2);transition:transform .2s}
+.world:hover{transform:translateY(-4px) rotate(-1deg)}
+.wemoji{font-size:3rem}.world p{opacity:.7;margin-bottom:8px}
+.lvl{display:flex;justify-content:space-between;width:100%;border:0;border-radius:12px;padding:10px 14px;margin-top:8px;
+  font-weight:800;font-size:1rem;cursor:pointer;color:#fff}
+.lvl span{color:#fff3bf;letter-spacing:2px}
+.lvl.easy{background:#40c057}.lvl.average{background:#fab005;color:#3b2f00}.lvl.average span{color:#7a4b00}
+.lvl.difficult{background:#fa5252}
+.lvl:hover{filter:brightness(1.1);transform:scale(1.03)}
+.maptitle{color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.4);margin:10px 0 14px}
+.hud{display:flex;justify-content:space-between;color:#fff;font-weight:800;text-shadow:0 2px 4px rgba(0,0,0,.4);margin:6px 0}
+.track{position:relative;height:14px;background:rgba(255,255,255,.5);border-radius:10px;margin:18px 22px 22px}
+.trackfill{height:100%;width:0;background:linear-gradient(90deg,#ffd43b,#ff922b);border-radius:10px;transition:width .5s}
+.walker{position:absolute;top:-16px;left:0;font-size:1.8rem;transform:translateX(-50%);transition:left .5s}
+.chest{position:absolute;right:-22px;top:-16px;font-size:1.8rem}
+.qcard{background:#fff;border-radius:24px;padding:22px 16px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,.2)}
+.qnum{font-weight:800;opacity:.6}
+.qtext{font-size:clamp(1.4rem,4.5vw,2.2rem);font-weight:900;margin-top:8px;line-height:1.35}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.ans{border:0;border-radius:20px;padding:20px 10px;font-size:1.5rem;font-weight:900;color:#fff;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.25);transition:transform .1s}
+.ans:hover{transform:scale(1.04)}.ans:active{transform:translateY(4px);box-shadow:none}
+.c0{background:#ff6b6b}.c1{background:#4dabf7}.c2{background:#40c057}.c3{background:#fab005;color:#3b2f00}
+.ans.right{outline:6px solid #2b8a3e;animation:bounce .6s}
+.ans.wrong{outline:6px solid #c92a2a;animation:shake .4s}
+.ans:disabled{cursor:default}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.typed{background:#fff;border-radius:18px;font-size:2rem;font-weight:900;text-align:center;padding:14px;margin-top:14px;min-height:64px;border:4px dashed #845ef7}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.key{border:0;border-radius:16px;padding:16px;font-size:1.5rem;font-weight:900;background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.key.go{background:#40c057;color:#fff}.key.del{background:#ffa8a8}
+.fb{min-height:54px;margin:14px 0 4px;text-align:center;font-size:1.25rem;font-weight:800;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.5)}
+.fb.good{animation:bounce .6s}.fb.bad{animation:pop .3s}
+.stars{font-size:4rem;letter-spacing:6px;margin:6px 0}
+.stars span{display:inline-block;filter:grayscale(1) opacity(.3);transform:scale(.3)}
+.stars span.on{animation:starin .6s forwards}
+@keyframes starin{to{filter:none;transform:scale(1) rotate(360deg)}}
+.stat{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-weight:800;margin:10px 0}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;text-align:left;border-bottom:1px solid #e9ecef}
+th{background:#f1f3f5}
+select{padding:8px 12px;border-radius:10px;font-size:1rem;margin-bottom:12px}
+.note{font-size:.85rem;opacity:.7;margin-top:10px}
+@media(max-width:480px){.answers{gap:8px}.ans{font-size:1.25rem}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-world="home">
+<div id="deco"></div>
+<canvas id="confetti"></canvas>
+
+<header class="top">
+  <div class="brand" id="brand">🧭 Math Explorers</div>
+  <div class="who" id="who"></div>
+  <button class="icon" id="muteBtn" aria-label="Turn sound on or off">🔊</button>
+</header>
+
+<main>
+  <!-- HOME + CODENAME -->
+  <section id="home" class="screen active">
+    <div class="card center">
+      <div class="hero">🦜</div>
+      <h1>Math Explorers</h1>
+      <p>Journey through seven worlds and solve math puzzles to find the treasure!</p>
+      <div class="note" style="margin-top:14px">Your explorer codename is</div>
+      <div class="codename" id="codename"></div>
+      <button class="btn alt" id="rerollBtn">🎲 New codename</button>
+      <button class="btn" id="startBtn">🚀 Start Adventure</button>
+      <p class="note">No password needed. Your codename keeps your name private.</p>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section id="map" class="screen">
+    <h2 class="maptitle">🗺️ Choose your world and level</h2>
+    <div class="grid" id="worlds"></div>
+    <button class="btn alt" id="boardBtn" style="margin-top:18px">🏆 Leaderboard</button>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="screen">
+    <div class="hud"><span id="hudWorld"></span><span id="hudScore">⭐ 0</span><span id="hudStreak"></span></div>
+    <div class="track"><div class="trackfill" id="trackfill"></div><div class="walker" id="walker">🧭</div><div class="chest">🏆</div></div>
+    <div class="qcard"><div class="qnum" id="qnum"></div><div class="qtext" id="qtext"></div></div>
+    <div id="answers"></div>
+    <div class="fb" id="fb" aria-live="polite"></div>
+    <div class="center"><button class="btn" id="nextBtn" hidden>Next ➜</button></div>
+    <div class="center"><button class="link" id="quitBtn">← Back to map</button></div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" class="screen">
+    <div class="card center">
+      <h1 id="resTitle"></h1>
+      <div class="stars" id="resStars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+      <div class="stat"><div id="resScore"></div><div id="resCorrect"></div><div id="resTime"></div></div>
+      <p id="resMsg"></p>
+      <p class="note" id="resSave"></p>
+      <button class="btn" id="againBtn">🔁 Play again</button>
+      <button class="btn alt" id="mapBtn">🗺️ World map</button>
+      <button class="btn alt" id="boardBtn2">🏆 Leaderboard</button>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="board" class="screen">
+    <div class="card">
+      <h2>🏆 Top Explorers</h2>
+      <select id="boardWorld"></select>
+      <div id="boardBody">Loading…</div>
+      <div class="center"><button class="btn alt" id="boardBack">← Back</button></div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ============ SETTINGS ============ */
+// Paste your Apps Script Web App URL here (see SETUP.md). Leave empty to play offline (scores saved on this device only).
+const CONFIG = { API_URL: 'https://script.google.com/macros/s/AKfycbyRXEo71mcJp1PYbRTFlu6LYl5YV1rfrndmk8TT2huXfGXXlKDaJOpfoeCy29FxigQG/exec', QUESTIONS: 10 };
+
+const WORLDS = [
+  {id:'jungle',   name:'Jungle Jump',     emoji:'🌴', op:'add',  title:'Addition',       deco:['🌴','🦜','🍌','🐒','🌿','🦋']},
+  {id:'ocean',    name:'Ocean Dive',      emoji:'🌊', op:'sub',  title:'Subtraction',    deco:['🐠','🐙','🫧','🐬','🐚','🦀']},
+  {id:'mountain', name:'Mountain Trek',   emoji:'⛰️', op:'mul',  title:'Multiplication', deco:['⛰️','🦅','❄️','🏕️','🥾','🐐']},
+  {id:'space',    name:'Space Quest',     emoji:'🚀', op:'div',  title:'Division',       deco:['🚀','⭐','🪐','👽','🌙','🛸']},
+  {id:'island',   name:'Treasure Island', emoji:'🏝️', op:'word', title:'Word Problems',  deco:['🏝️','🏴‍☠️','💰','🦀','⛵','🗺️']},
+  {id:'cave',     name:'Mystery Cave',    emoji:'🔦', op:'mix',  title:'Fractions, Place Value, Rounding & Patterns', deco:['🔦','🦇','💎','🕯️','🗝️','🪨']},
+  {id:'quest',    name:'Grand Quest',     emoji:'🏆', op:'all',  title:'All four operations mixed', deco:['🏆','🔥','💥','🎯','⚡','🌈']}
+];
+const LEVELS = [
+  {id:'easy',      name:'Easy',      emoji:'🌱', mult:1},
+  {id:'average',   name:'Average',   emoji:'🌟', mult:2},
+  {id:'difficult', name:'Difficult', emoji:'🔥', mult:3}
+];
+
+/* ============ HELPERS ============ */
+const $ = s => document.querySelector(s);
+const rnd = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const pick = a => a[rnd(0,a.length-1)];
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]} return a; };
+const fmt = n => Number(n).toLocaleString('en-US');
+const num = s => Number(String(s).replace(/,/g,''));
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d }catch(e){ return d } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)) }catch(e){} }
+};
+
+/* ============ SOUND (generated in the browser, no files needed) ============ */
+let actx=null, muted=store.get('mx_muted',false);
+function ac(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)() }catch(e){} } if(actx&&actx.state==='suspended') actx.resume(); return actx; }
+function tone(f,d=.15,type='sine',t0=0,vol=.15){
+  if(muted) return; const c=ac(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.value=f;
+  const t=c.currentTime+t0; g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol,t+.02); g.gain.exponentialRampToValueAtTime(.001,t+d);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+d+.05);
+}
+const sfx = {
+  click:()=>tone(600,.08,'triangle'),
+  start:()=>[392,523,659,784].forEach((f,i)=>tone(f,.15,'square',i*.08,.07)),
+  good:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.18,'triangle',i*.07)),
+  bad:()=>{tone(220,.25,'sawtooth',0,.08);tone(150,.3,'sawtooth',.15,.08)},
+  star:()=>[784,988,1319].forEach((f,i)=>tone(f,.25,'sine',i*.1)),
+  win:()=>[523,659,784,659,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',i*.1))
+};
+function updateMute(){ $('#muteBtn').textContent = muted?'🔇':'🔊'; }
+
+/* ============ CONFETTI ============ */
+const cv=$('#confetti'), cx=cv.getContext('2d'); let parts=[], raf=0;
+function resize(){ cv.width=innerWidth; cv.height=innerHeight } addEventListener('resize',resize); resize();
+function burst(n=40,x=innerWidth/2,y=innerHeight/3){
+  for(let i=0;i<n;i++) parts.push({x,y,vx:(Math.random()-.5)*12,vy:Math.random()*-11-2,s:rnd(6,11),c:`hsl(${rnd(0,360)},90%,60%)`,r:Math.random()*6,life:110});
+  if(!raf) loop();
+}
+function loop(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts=parts.filter(p=>p.life>0);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.3;p.r+=.2;p.life--;cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);cx.restore()});
+  raf = parts.length ? requestAnimationFrame(loop) : 0;
+  if(!raf) cx.clearRect(0,0,cv.width,cv.height);
+}
+
+/* ============ CODENAME ============ */
+const ADJ=['Brave','Swift','Clever','Mighty','Sunny','Lucky','Bold','Happy','Daring','Cosmic','Jolly','Fearless'];
+const ANI=[['Parrot','🦜'],['Tiger','🐯'],['Dolphin','🐬'],['Fox','🦊'],['Panda','🐼'],['Eagle','🦅'],['Turtle','🐢'],['Lion','🦁'],['Octopus','🐙'],['Monkey','🐵'],['Owl','🦉'],['Penguin','🐧']];
+let me = store.get('mx_codename',null);
+function newCodename(){ const [n,e]=pick(ANI); me={name:`${pick(ADJ)} ${n} ${rnd(10,99)}`,emoji:e}; store.set('mx_codename',me); showCodename(); }
+function showCodename(){ $('#codename').textContent=`${me.emoji} ${me.name}`; $('#who').textContent=`${me.emoji} ${me.name}`; }
+
+/* ============ SCREENS ============ */
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id)); scrollTo(0,0); }
+function setWorld(id,list){
+  document.body.dataset.world=id;
+  const d=$('#deco'); d.innerHTML='';
+  const set=list||['🧭','🗺️','⭐','🌴','🚀','🐬'];
+  for(let i=0;i<14;i++){ const s=document.createElement('span'); s.textContent=pick(set); s.style.left=rnd(0,95)+'%'; s.style.top=rnd(0,90)+'%'; s.style.fontSize=rnd(26,58)+'px'; s.style.animationDuration=rnd(6,14)+'s'; s.style.animationDelay=(-rnd(0,10))+'s'; d.appendChild(s); }
+}
+function renderMap(){
+  setWorld('home'); const prog=store.get('mx_progress',{}); const box=$('#worlds'); box.innerHTML='';
+  WORLDS.forEach(w=>{
+    const card=document.createElement('div'); card.className='world';
+    card.innerHTML=`<div class="wemoji">${w.emoji}</div><h3>${w.name}</h3><p>${w.title}</p>`;
+    LEVELS.forEach(l=>{
+      const st=prog[w.id+'_'+l.id]||0; const b=document.createElement('button'); b.className='lvl '+l.id;
+      b.innerHTML=`<b>${l.emoji} ${l.name}</b><span>${'★'.repeat(st)}${'☆'.repeat(3-st)}</span>`;
+      b.onclick=()=>{ sfx.start(); startGame(w,l); }; card.appendChild(b);
+    });
+    box.appendChild(card);
+  });
+  show('map');
+}
+
+/* ============ QUESTION GENERATORS ============ */
+function opQ(op,l){
+  let a,b,ans,sym;
+  if(op==='add'){
+    const r={easy:[10,60],average:[100,899],difficult:[1000,8999]}[l];
+    a=rnd(r[0],r[1]); b=l==='easy'?rnd(5,39):rnd(r[0],r[1]); ans=a+b; sym='+';
+  } else if(op==='sub'){
+    if(l==='easy'){a=rnd(20,99);b=rnd(5,a-1)} else if(l==='average'){a=rnd(200,999);b=rnd(100,a-1)} else {a=rnd(2000,9999);b=rnd(1000,a-1)}
+    ans=a-b; sym='−';
+  } else if(op==='mul'){
+    if(l==='easy'){a=rnd(2,5);b=rnd(1,10)} else if(l==='average'){a=rnd(3,9);b=rnd(3,12)}
+    else if(Math.random()<.5){a=rnd(12,99);b=rnd(3,9)} else {a=rnd(100,250);b=rnd(2,9)}
+    ans=a*b; sym='×';
+  } else {
+    let c; if(l==='easy'){b=rnd(2,5);c=rnd(1,10)} else if(l==='average'){b=rnd(3,9);c=rnd(3,12)} else {b=rnd(3,9);c=rnd(12,99)}
+    a=b*c; ans=c; sym='÷';
+  }
+  return {q:`${fmt(a)} ${sym} ${fmt(b)} = ?`, a:fmt(ans), why:`${fmt(a)} ${sym} ${fmt(b)} = ${fmt(ans)}`};
+}
+function wordQ(l){
+  const n=pick(['Mika','Ben','Aya','Leo','Sam','Nina','Zara','Kai']);
+  const it=pick(['shells','coins','mangoes','gems','marbles','stars','maps']);
+  const t=pick(l==='easy'?['add','sub','mul','div']:['add','sub','mul','div','two']);
+  const R=(e,a,d)=>({easy:e,average:a,difficult:d}[l]);
+  let q,ans,why;
+  if(t==='add'){ const r=R([10,40],[120,500],[1200,5000]); const a=rnd(...r),b=rnd(...r); ans=a+b;
+    q=`${n} found ${fmt(a)} ${it} on the beach and ${fmt(b)} more in a cave. How many ${it} did ${n} find in all?`; why=`${fmt(a)} + ${fmt(b)} = ${fmt(ans)}`; }
+  else if(t==='sub'){ const r=R([30,99],[300,999],[3000,9999]); const a=rnd(...r),b=rnd(Math.floor(r[0]/3),a-1); ans=a-b;
+    q=`A pirate ship carried ${fmt(a)} ${it}. ${fmt(b)} ${it} fell into the sea. How many ${it} are left?`; why=`${fmt(a)} − ${fmt(b)} = ${fmt(ans)}`; }
+  else if(t==='mul'){ const ra=R([2,5],[3,9],[3,9]), rb=R([2,10],[6,25],[12,99]); const x=rnd(ra[0],ra[1]), y=rnd(rb[0],rb[1]); ans=x*y;
+    q=`Each treasure chest holds ${y} ${it}. How many ${it} are in ${x} chests?`; why=`${x} × ${y} = ${fmt(ans)}`; }
+  else if(t==='div'){ const rk=R([2,5],[3,9],[4,9]), rc=R([2,10],[5,25],[15,120]); const k2=rnd(rk[0],rk[1]), c2=rnd(rc[0],rc[1]); ans=c2;
+    q=`${fmt(k2*c2)} ${it} are shared equally among ${k2} explorers. How many ${it} does each explorer get?`; why=`${fmt(k2*c2)} ÷ ${k2} = ${fmt(ans)}`; }
+  else { const a=rnd(2,9), rb=R([3,6],[3,12],[10,40]), rc=R([5,20],[10,60],[20,200]); const bb=rnd(rb[0],rb[1]), c=rnd(rc[0],rc[1]); ans=a*bb+c;
+    q=`${n} bought ${a} bags with ${bb} ${it} in each bag, then found ${c} more ${it}. How many ${it} does ${n} have now?`; why=`${a} × ${bb} = ${a*bb}, then ${a*bb} + ${c} = ${fmt(ans)}`; }
+  return {q,a:fmt(ans),why};
+}
+function mixQ(l){
+  const t=pick(['frac','cmp','place','round','pattern']);
+  if(t==='frac'){
+    const den=pick(l==='easy'?[2,4]:l==='average'?[2,3,4,5,10]:[3,4,5,6,8,10]);
+    const part=den?rnd(l==='easy'?2:2,l==='easy'?5:l==='average'?10:15):2; const whole=den*part;
+    const nu=l==='easy'?1:l==='average'?rnd(1,Math.min(2,den-1)):rnd(1,den-1);
+    const ans=part*nu; return {q:`What is ${nu}/${den} of ${whole}?`,a:fmt(ans),why:`${whole} ÷ ${den} = ${part}, then ${part} × ${nu} = ${ans}`};
+  }
+  if(t==='cmp'){
+    let x,y,ansTxt,why;
+    if(l==='difficult'){ let p=rnd(2,10),q=rnd(2,10); while(p===q) q=rnd(2,10); x=`1/${p}`; y=`1/${q}`; ansTxt=p<q?x:y; why=`When the top is the same, the smaller bottom number means bigger pieces.`; }
+    else { const d=l==='easy'?rnd(4,8):rnd(8,12); let p=rnd(1,d-1),q=rnd(1,d-1); while(p===q) q=rnd(1,d-1); x=`${p}/${d}`; y=`${q}/${d}`; ansTxt=p>q?x:y; why=`Same bottom number, so the bigger top number is greater.`; }
+    return {q:`Which fraction is greater: ${x} or ${y}?`,a:ansTxt,choices:[x,y],why};
+  }
+  if(t==='place'){
+    const k=l==='easy'?3:l==='average'?5:6; const digs=shuffle([1,2,3,4,5,6,7,8,9]).slice(0,k);
+    const n=Number(digs.join('')); const pos=rnd(0,k-1); const d=digs[pos]; const val=d*Math.pow(10,k-1-pos);
+    return {q:`In ${fmt(n)}, what is the value of the digit ${d}?`,a:fmt(val),why:`The digit ${d} is in the ${fmt(Math.pow(10,k-1-pos))}s place, so its value is ${fmt(val)}.`};
+  }
+  if(t==='round'){
+    const p=l==='easy'?10:l==='average'?100:1000; const n=l==='easy'?rnd(11,99):l==='average'?rnd(101,9999):rnd(10001,999999);
+    const ans=Math.round(n/p)*p; return {q:`Round ${fmt(n)} to the nearest ${fmt(p)}.`,a:fmt(ans),why:`Look at the digit to the right. ${fmt(n)} rounds to ${fmt(ans)}.`};
+  }
+  const step=l==='easy'?rnd(2,5):l==='average'?rnd(6,15):rnd(20,120); const dir=l==='difficult'&&Math.random()<.5?-1:1;
+  const start=l==='easy'?rnd(1,20):l==='average'?rnd(10,100):rnd(500,2000); const seq=[0,1,2,3,4].map(i=>start+dir*step*i); const h=rnd(1,3);
+  const shown=seq.map((v,i)=>i===h?'__':fmt(v)).join(', ');
+  return {q:`Find the missing number: ${shown}`,a:fmt(seq[h]),why:`The pattern ${dir>0?'adds':'subtracts'} ${step} each time, so the missing number is ${fmt(seq[h])}.`};
+}
+function numChoices(ans){
+  const v=num(ans), set=new Set([v]);
+  if(!Number.isFinite(v)) return shuffle([ans,'0','1','2']);
+  for(const c of shuffle([v+1,v-1,v+10,v-10,v+2,v-2,v+100,v-100,Math.round(v*1.1)])){ if(c>=0&&set.size<4) set.add(c); }
+  let k=3; while(set.size<4){ set.add(v+k); k++; }
+  return shuffle([...set].map(fmt));
+}
+function makeQuestion(w,l){
+  let op=w.op; if(op==='all') op=pick(['add','sub','mul','div']);
+  const q = op==='word'?wordQ(l) : op==='mix'?mixQ(l) : opQ(op,l);
+  q.typed = !q.choices && l==='difficult';
+  if(!q.choices && !q.typed) q.choices=numChoices(q.a);
+  return q;
+}
+function makeSet(w,l){
+  const out=[], seen=new Set(); let tries=0;
+  while(out.length<CONFIG.QUESTIONS && tries<200){ tries++; const q=makeQuestion(w,l); if(!seen.has(q.q)){ seen.add(q.q); out.push(q); } }
+  return out;
+}
+
+/* ============ GAME ============ */
+let G=null;
+function startGame(w,l){
+  G={w,l,qs:makeSet(w,l.id),i:0,score:0,correct:0,streak:0,t0:Date.now(),locked:false,typed:''};
+  setWorld(w.id,w.deco); show('game'); renderQ();
+}
+function renderQ(){
+  const q=G.qs[G.i]; G.locked=false; G.typed='';
+  $('#hudWorld').textContent=`${G.w.emoji} ${G.w.name} · ${G.l.emoji} ${G.l.name}`;
+  $('#hudScore').textContent=`⭐ ${G.score}`;
+  $('#hudStreak').textContent=G.streak>=2?`🔥 ${G.streak} in a row!`:'';
+  $('#qnum').textContent=`Question ${G.i+1} of ${G.qs.length}`;
+  $('#qtext').textContent=q.q;
+  const pct=G.i/G.qs.length*100; $('#trackfill').style.width=pct+'%'; $('#walker').style.left=pct+'%';
+  $('#fb').textContent=''; $('#fb').className='fb'; $('#nextBtn').hidden=true;
+  const box=$('#answers'); box.innerHTML='';
+  if(q.typed){
+    box.innerHTML=`<div class="typed" id="typed">?</div><div class="keys"></div>`;
+    const keys=box.querySelector('.keys');
+    ['1','2','3','4','5','6','7','8','9','⌫','0','✔'].forEach(k=>{
+      const b=document.createElement('button'); b.className='key'+(k==='✔'?' go':k==='⌫'?' del':''); b.textContent=k; b.onclick=()=>keyPress(k); keys.appendChild(b);
+    });
+  } else {
+    box.className='answers';
+    q.choices.forEach((c,i)=>{ const b=document.createElement('button'); b.className='ans c'+i; b.textContent=c; b.onclick=()=>answer(c,b); box.appendChild(b); });
+  }
+  if(q.typed) box.className='';
+}
+function keyPress(k){
+  if(G.locked) return; sfx.click();
+  if(k==='⌫') G.typed=G.typed.slice(0,-1);
+  else if(k==='✔'){ if(G.typed) answer(G.typed); return; }
+  else if(G.typed.length<9) G.typed+=k;
+  $('#typed').textContent=G.typed?fmt(G.typed):'?';
+}
+addEventListener('keydown',e=>{
+  if(!$('#game').classList.contains('active')||!G) return;
+  const q=G.qs[G.i];
+  if(q.typed){ if(/^\d$/.test(e.key)) keyPress(e.key); else if(e.key==='Backspace') keyPress('⌫'); else if(e.key==='Enter') keyPress('✔'); }
+  else if(e.key==='Enter' && !$('#nextBtn').hidden) next();
+});
+function answer(given,btn){
+  if(G.locked) return; G.locked=true;
+  const q=G.qs[G.i]; const ok = q.typed ? num(given)===num(q.a) : given===q.a;
+  const fb=$('#fb');
+  document.querySelectorAll('.ans').forEach(b=>{ b.disabled=true; if(b.textContent===q.a) b.classList.add('right'); });
+  if(ok){
+    G.correct++; G.streak++; G.score+=(10+Math.min(G.streak-1,5)*2)*G.l.mult;
+    fb.className='fb good'; fb.textContent=pick(['🎉 Great job!','🌟 Awesome!','👏 You got it!','🚀 Super explorer!','💎 Brilliant!']);
+    sfx.good(); const r=btn?btn.getBoundingClientRect():null; burst(26, r?r.left+r.width/2:innerWidth/2, r?r.top:innerHeight/2);
+    $('#hudScore').textContent=`⭐ ${G.score}`;
+    setTimeout(next,1100);
+  } else {
+    G.streak=0; if(btn) btn.classList.add('wrong');
+    fb.className='fb bad'; fb.textContent=`Not quite! ${q.why}`; sfx.bad();
+    $('#nextBtn').hidden=false;
+  }
+}
+function next(){ if(!G||!$('#game').classList.contains('active')) return; G.i++; if(G.i>=G.qs.length) finish(); else renderQ(); }
+
+async function finish(){
+  const total=G.qs.length, secs=Math.round((Date.now()-G.t0)/1000), ratio=G.correct/total;
+  const stars=ratio>=.9?3:ratio>=.7?2:ratio>=.5?1:0;
+  const key=G.w.id+'_'+G.l.id, prog=store.get('mx_progress',{}); if((prog[key]||0)<stars){ prog[key]=stars; store.set('mx_progress',prog); }
+  $('#resTitle').textContent = stars===3?'🏆 Treasure Found!':stars>=1?'🎒 Nice Adventure!':'🧭 Keep Exploring!';
+  $('#resScore').textContent=`⭐ ${G.score} points`; $('#resCorrect').textContent=`✅ ${G.correct}/${total} correct`; $('#resTime').textContent=`⏱️ ${secs}s`;
+  $('#resMsg').textContent = stars===3?'Amazing! You are a Master Explorer!':stars===2?'Great work! Try again for three stars.':stars===1?'Good try! Practice makes you stronger.':'Every explorer learns on the way. Try again!';
+  $('#resSave').textContent='Saving your score…';
+  const spans=[...document.querySelectorAll('#resStars span')]; spans.forEach(s=>s.classList.remove('on'));
+  show('result'); setWorld(G.w.id,G.w.deco);
+  if(stars>0){ sfx.win(); burst(120); spans.forEach((s,i)=>{ if(i<stars) setTimeout(()=>{ s.classList.add('on'); sfx.star(); },400+i*500); }); } else sfx.bad();
+  const st=await saveScore({codename:me.name,world:G.w.id,level:G.l.id,score:G.score,correct:G.correct,total,seconds:secs});
+  $('#resSave').textContent = st==='cloud'?'✅ Score sent to the Explorer Leaderboard!':'💾 Score saved on this device.';
+}
+async function saveScore(rec){
+  const local=store.get('mx_scores',[]); local.push(rec); local.sort((a,b)=>b.score-a.score); store.set('mx_scores',local.slice(0,50));
+  if(!CONFIG.API_URL) return 'local';
+  try{ await fetch(CONFIG.API_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(rec)}); return 'cloud'; }catch(e){ return 'local'; }
+}
+
+/* ============ LEADERBOARD ============ */
+async function renderBoard(){
+  setWorld('home'); show('board');
+  const sel=$('#boardWorld'); if(!sel.options.length){ sel.innerHTML='<option value="">All worlds</option>'+WORLDS.map(w=>`<option value="${w.id}">${w.emoji} ${w.name}</option>`).join(''); sel.onchange=loadBoard; }
+  loadBoard();
+}
+async function loadBoard(){
+  const body=$('#boardBody'), world=$('#boardWorld').value; body.textContent='Loading…'; let rows=null, online=false;
+  if(CONFIG.API_URL){ try{ const r=await fetch(`${CONFIG.API_URL}?action=leaderboard&world=${encodeURIComponent(world)}`); const j=await r.json(); if(j.ok){ rows=j.rows; online=true; } }catch(e){} }
+  if(!rows) rows=store.get('mx_scores',[]).filter(r=>!world||r.world===world).slice(0,10);
+  if(!rows.length){ body.textContent='No scores yet. Be the first explorer!'; return; }
+  const wn=id=>(WORLDS.find(w=>w.id===id)||{emoji:'',name:id}); const medal=['🥇','🥈','🥉'];
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  body.innerHTML=`<table><tr><th>#</th><th>Explorer</th><th>World</th><th>Level</th><th>Score</th></tr>${rows.map((r,i)=>`<tr><td>${medal[i]||i+1}</td><td>${esc(r.codename)}</td><td>${wn(r.world).emoji} ${esc(wn(r.world).name)}</td><td>${esc(r.level)}</td><td><b>${Number(r.score)||0}</b></td></tr>`).join('')}</table>
+  <p class="note">${online?'Showing the class leaderboard.':'Showing scores from this device.'}</p>`;
+}
+
+/* ============ WIRING ============ */
+$('#startBtn').onclick=()=>{ sfx.start(); renderMap(); };
+$('#rerollBtn').onclick=()=>{ sfx.click(); newCodename(); burst(20); };
+$('#brand').onclick=()=>{ sfx.click(); setWorld('home'); show('home'); };
+$('#muteBtn').onclick=()=>{ muted=!muted; store.set('mx_muted',muted); updateMute(); if(!muted) sfx.click(); };
+$('#boardBtn').onclick=()=>{ sfx.click(); renderBoard(); };
+$('#boardBtn2').onclick=()=>{ sfx.click(); renderBoard(); };
+$('#boardBack').onclick=()=>{ sfx.click(); renderMap(); };
+$('#mapBtn').onclick=()=>{ sfx.click(); renderMap(); };
+$('#againBtn').onclick=()=>{ sfx.start(); startGame(G.w,G.l); };
+$('#quitBtn').onclick=()=>{ sfx.click(); renderMap(); };
+$('#nextBtn').onclick=()=>{ sfx.click(); next(); };
+
+if(!me) newCodename(); else showCodename();
+updateMute(); setWorld('home');
+</script>
+</body>
+</html>
